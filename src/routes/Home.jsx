@@ -5,8 +5,7 @@ import Loader from '../components/Loader'
 import SearchInput from '../components/SearchInput';
 import SortByFilter from '../components/SortByFilter';
 import Modal from '../components/Modal';
-
-let PageSize = 5;
+import Pagination from '../components/Pagination';
 
 export default function Home() {
   const nameInput = useRef();
@@ -16,6 +15,9 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [filteredPokemons, setFilteredPokemons] = useState([]);
   const [sortOrder, setSortOrder] = useState('A-Z');
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [postsPerPage, setPostsPerPage] = useState(10);
 
   useEffect(() => {
     fetch('https://dummyapi.online/api/pokemon').then(res => res.json()).then(data => {
@@ -28,6 +30,10 @@ export default function Home() {
       setLoading(false);
     });
   }, [])
+
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = filteredPokemons.slice(indexOfFirstPost, indexOfLastPost);
 
   function dataSorter(data, property, order = 'asc') {
     return [...data].sort((a, b) => {
@@ -56,6 +62,8 @@ export default function Home() {
     setFilteredPokemons(sortedPokemons);
   }
 
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
 
   if (loading || error) {
     return (
@@ -79,13 +87,13 @@ export default function Home() {
             <SortByFilter id="sort" onChange={handleSortChange} value={sortOrder} />
           </Container>
           <Container top='5' ContainerType='ul' className='flex flex-wrap gap-4 justify-center'>
-            {filteredPokemons.map((pokemon, index) => (
+            {currentPosts.map((pokemon, index) => (
               <FlippingCard key={index} pokemon={pokemon} />
           ))}
           </Container>
         </Container>
         <Container top='5' ContainerType='div' className='flex justify-center'>
-          
+          <Pagination postsPerPage={postsPerPage} totalPosts={pokemons.length} paginate={paginate} />
         </Container>
       </Container>
     </>
