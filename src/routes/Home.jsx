@@ -19,6 +19,8 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [postsPerPage, setPostsPerPage] = useState(10);
 
+  const [name, setName] = useState('');
+
   useEffect(() => {
     fetch('https://dummyapi.online/api/pokemon').then(res => res.json()).then(data => {
       const sortedPokemons = dataSorter(data, 'pokemon');

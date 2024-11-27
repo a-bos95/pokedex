@@ -2,10 +2,9 @@ import {useRef, forwardRef} from 'react'
 import { createPortal } from 'react-dom';
 
 function Modal({isOpen}, ref) {
-  const dialogRef = useRef()
 
   return createPortal(
-    <dialog ref={dialogRef} open={isOpen}>
+    <dialog open={isOpen} className='backdrop:bg-black/50 backdrop:backdrop-blur-md absolute z-20 top-1/2'>
       <div className='prose justify-self-center p-10 bg-primary flex flex-col z-20'>
         <h2 className='text-white'>What's your name?</h2>
         <input type="text" ref={ref} className='input input-bordered input-secondary w-full max-w-xs' placeholder='Please enter your name'/>
