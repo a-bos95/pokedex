@@ -8,8 +8,7 @@ import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
 
 export default function Home() {
-  const nameInput = useRef();
-  const [isNameInputModalOpen, setIsNameInputModalOpen] = useState(false)
+  const modalInput = useRef();
   const [pokemons, setPokemons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,8 +17,6 @@ export default function Home() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [postsPerPage, setPostsPerPage] = useState(10);
-
-  const [name, setName] = useState('');
 
   useEffect(() => {
     fetch('https://dummyapi.online/api/pokemon').then(res => res.json()).then(data => {
@@ -49,11 +46,17 @@ export default function Home() {
   
   const handleInputChange = (e) => {
     const query = e.target.value;
+    if(query === 'all') {
+      setFilteredPokemons(pokemons);
+    }
     const filteredData = filterData(pokemons, query, 'pokemon');
     setFilteredPokemons(filteredData);
   };
   
   const handleSortChange = (e) => {
+    if (e.target.value === 'all') {
+      setFilteredPokemons(pokemons);
+    }
     setSortOrder(e.target.value);
     const sortedPokemons = [...filteredPokemons];
     if (e.target.value === 'A-Z') {
@@ -62,6 +65,11 @@ export default function Home() {
       sortedPokemons.sort((a, b) => b.pokemon.localeCompare(a.pokemon, "it"));
     }
     setFilteredPokemons(sortedPokemons);
+  }
+
+  const handlePokemonTypeChange = (e) => {
+    const filteredByType = pokemons.filter(pokemon => pokemon.type.includes(e.target.value));
+    setFilteredPokemons(filteredByType);
   }
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -77,16 +85,20 @@ export default function Home() {
       </Container>
     );
   }
+
+  const pokemonTypes = Array.from(new Set(pokemons.map(pokemon => pokemon.type.split('/')).flat()));
+
+  console.log('Pokemon Types:', pokemonTypes);
   
   return (
     <>
-      <button onClick={() => setIsNameInputModalOpen(true)}>Open modal</button>
       <Container ContainerType='main'>
-        <Modal ref={nameInput} isOpen={isNameInputModalOpen} />
+        <Modal ref={modalInput}/>
         <Container top='5' ContainerType='div' className='flex flex-col gap-4 max-w-[90%] mx-auto'>
           <Container top='5' ContainerType='div' className='flex gap-4 items-center justify-center'>
             <SearchInput placeholder='Search for a pokemon' className='rounded-lg p-2 border border-secondary focus:outline focus:outline-secondary' onChange={(e) => handleInputChange(e, setFilteredPokemons, 'filteredPokemons', pokemons, 'pokemon')} />
-            <SortByFilter id="sort" onChange={handleSortChange} value={sortOrder} />
+            <SortByFilter id="sort" onChange={handleSortChange} propertyName='Name' options={['A-Z', 'Z-A']} />
+            <SortByFilter id="sort" onChange={handlePokemonTypeChange} propertyName='Type' options={pokemonTypes}/>
           </Container>
           <Container top='5' ContainerType='ul' className='flex flex-wrap gap-4 justify-center'>
             {currentPosts.map((pokemon, index) => (
@@ -95,7 +107,7 @@ export default function Home() {
           </Container>
         </Container>
         <Container top='5' ContainerType='div' className='flex justify-center'>
-          <Pagination postsPerPage={postsPerPage} totalPosts={pokemons.length} paginate={paginate} />
+          <Pagination postsPerPage={postsPerPage} totalPosts={filteredPokemons.length} paginate={paginate} />
         </Container>
       </Container>
     </>

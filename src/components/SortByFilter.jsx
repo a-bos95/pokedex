@@ -1,16 +1,20 @@
 import React from 'react'
 
-export default function SortByFilter({onChange, sortOrder, ...props}) {
+export default function SortByFilter({onChange, propertyName, options, ...props}) {
   return (
     <div>
-      <label htmlFor="sort">Sort by Name:</label>
+      <label htmlFor="sort">Sort by {propertyName}:</label>
       <select
         {...props}
-        value={sortOrder}
+        className='ml-2'
         onChange={onChange}
       >
-        <option value="A-Z">A-Z</option>
-        <option value="Z-A">Z-A</option>
+        <option value="all">All</option>
+        {options && options.map(option => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
       </select>
     </div>
   )

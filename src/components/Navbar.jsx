@@ -1,7 +1,7 @@
 import { useState} from 'react'
 import { Link } from 'react-router-dom'
 
-export default function Navbar({ title = 'Pokedex' }) {
+export default function Navbar({ title = 'Pokedex', name = 'Guest' }) {
   const [filtersOpen, setFiltersOpen] = useState(false)
 
   const handleButtonClick = () => {
@@ -19,7 +19,7 @@ export default function Navbar({ title = 'Pokedex' }) {
       </ul>
       </div>
       <div className="navbar-end">
-        
+        <p>Benvenuto, { name }</p>
       </div>
     </div>
   )
