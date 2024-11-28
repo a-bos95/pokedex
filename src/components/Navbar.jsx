@@ -16,6 +16,7 @@ export default function Navbar({ title = 'Pokedex', name = 'Guest' }) {
       <ul className="menu menu-horizontal px-1">
         <li><a>Preferiti</a></li>
         <li><a>I miei Pokemon</a></li>
+        <li><Link to="/favorites" className="your-classes">Favorites</Link></li>
       </ul>
       </div>
       <div className="navbar-end">

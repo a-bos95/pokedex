@@ -13,10 +13,12 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filteredPokemons, setFilteredPokemons] = useState([]);
-  const [sortOrder, setSortOrder] = useState('A-Z');
-
   const [currentPage, setCurrentPage] = useState(1);
   const [postsPerPage, setPostsPerPage] = useState(10);
+  const [favorites, setFavorites] = useState(() => {
+    const savedFavorites = localStorage.getItem('favorites');
+    return savedFavorites ? JSON.parse(savedFavorites) : [];
+  });
 
   useEffect(() => {
     fetch('https://dummyapi.online/api/pokemon').then(res => res.json()).then(data => {
@@ -54,23 +56,40 @@ export default function Home() {
   };
   
   const handleSortChange = (e) => {
-    if (e.target.value === 'all') {
-      setFilteredPokemons(pokemons);
-    }
-    setSortOrder(e.target.value);
-    const sortedPokemons = [...filteredPokemons];
-    if (e.target.value === 'A-Z') {
-      sortedPokemons.sort((a, b) => a.pokemon.localeCompare(b.pokemon, "it"));
-    } else {
-      sortedPokemons.sort((a, b) => b.pokemon.localeCompare(a.pokemon, "it"));
-    }
+    const selectedSortOrder = e.target.value;
+    
+    const sortedPokemons = dataSorter(filteredPokemons, 'pokemon', selectedSortOrder === 'Z-A' ? 'desc' : 'asc');
     setFilteredPokemons(sortedPokemons);
   }
 
   const handlePokemonTypeChange = (e) => {
-    const filteredByType = pokemons.filter(pokemon => pokemon.type.includes(e.target.value));
-    setFilteredPokemons(filteredByType);
+    if (e.target.value === 'all') {
+      setFilteredPokemons(pokemons);
+    } else {
+      const filteredByType = pokemons.filter(pokemon => pokemon.type.includes(e.target.value));
+      setFilteredPokemons(filteredByType);
+    }
   }
+
+  function handleFavorites(pokemon) {
+    setFavorites((prevFavorites) => {
+      const isPokemonFavorite = prevFavorites.some(fav => fav.pokemon === pokemon.pokemon);
+      
+      let newFavorites;
+      if (isPokemonFavorite) {
+        newFavorites = prevFavorites.filter(fav => fav.pokemon !== pokemon.pokemon);
+      } else {
+        newFavorites = [...prevFavorites, pokemon];
+      }
+      
+      localStorage.setItem('favorites', JSON.stringify(newFavorites));
+      return newFavorites;
+    });
+  }
+
+  const isFavorite = (pokemon) => {
+    return favorites.some(fav => fav.pokemon === pokemon.pokemon);
+  };
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -87,8 +106,6 @@ export default function Home() {
   }
 
   const pokemonTypes = Array.from(new Set(pokemons.map(pokemon => pokemon.type.split('/')).flat()));
-
-  console.log('Pokemon Types:', pokemonTypes);
   
   return (
     <>
@@ -98,12 +115,17 @@ export default function Home() {
           <Container top='5' ContainerType='div' className='flex gap-4 items-center justify-center'>
             <SearchInput placeholder='Search for a pokemon' className='rounded-lg p-2 border border-secondary focus:outline focus:outline-secondary' onChange={(e) => handleInputChange(e, setFilteredPokemons, 'filteredPokemons', pokemons, 'pokemon')} />
             <SortByFilter id="sort" onChange={handleSortChange} propertyName='Name' options={['A-Z', 'Z-A']} />
-            <SortByFilter id="sort" onChange={handlePokemonTypeChange} propertyName='Type' options={pokemonTypes}/>
+            <SortByFilter id="sort" onChange={handlePokemonTypeChange} propertyName='Type' options={pokemonTypes} AllItems />
           </Container>
           <Container top='5' ContainerType='ul' className='flex flex-wrap gap-4 justify-center'>
             {currentPosts.map((pokemon, index) => (
-              <FlippingCard key={index} pokemon={pokemon} />
-          ))}
+              <FlippingCard 
+                key={index} 
+                pokemon={pokemon} 
+                onClickFavorites={() => handleFavorites(pokemon)}
+                isFavorite={isFavorite(pokemon)} 
+              />
+            ))}
           </Container>
         </Container>
         <Container top='5' ContainerType='div' className='flex justify-center'>
