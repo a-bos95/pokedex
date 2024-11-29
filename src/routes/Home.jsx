@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import FlippingCard from '../components/FlippingCard';
 import Container from '../components/Container';
 import Loader from '../components/Loader';
@@ -7,14 +7,20 @@ import SortByFilter from '../components/SortByFilter';
 import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
 import { useFavorites } from '../customHooks/useFavorites';
+import { useSearchParams } from 'react-router-dom';
+
+const POSTS_PER_PAGE = 10
 
 export default function Home() {
+  const [searchParams] = useSearchParams();
   const [pokemons, setPokemons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filteredPokemons, setFilteredPokemons] = useState([]);
+
   const [currentPage, setCurrentPage] = useState(1);
-  const [postsPerPage] = useState(10);
+  const [currentFilter, setCurrentFilter] = useState('all')
+  const [currentSort, setCurrentSort] = useState('A-Z')
+  const [currentSearch, setCurrentSearch] = useState('')
 
   // Use the favorites hook
   const { toggleFavorite, isFavorite } = useFavorites('favorites', 'pokemon');
@@ -23,60 +29,61 @@ export default function Home() {
     fetch('https://dummyapi.online/api/pokemon')
       .then(res => res.json())
       .then(data => {
-        const sortedPokemons = dataSorter(data, 'pokemon');
-        setPokemons(sortedPokemons);
-        setFilteredPokemons(sortedPokemons);
+        setPokemons(data);
       })
-      .catch(setError)
+      .catch(error => setError(error))
       .finally(() => setLoading(false));
   }, []);
 
-  const indexOfLastPost = currentPage * postsPerPage;
-  const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = filteredPokemons.slice(indexOfFirstPost, indexOfLastPost);
+    
+  const pokemonTypes = useMemo(() => Array.from(
+    new Set(
+      pokemons.map(pokemon => 
+        pokemon.type.split('/')
+      )
+      .flat()
+  )), [pokemons]);
 
-  function dataSorter(data, property, order = 'asc') {
-    return [...data].sort((a, b) => {
-      const comparison = a[property].localeCompare(b[property], "it");
-      return order === 'desc' ? -comparison : comparison;
-    });
-  }
+  const currentPosts = useMemo(() => {
+    const indexOfLastPost = currentPage * POSTS_PER_PAGE;
+    const indexOfFirstPost = indexOfLastPost - POSTS_PER_PAGE;
 
-  const filterData = (data, query, property) => {
-    return data.filter(item => 
-      item[property].toLowerCase().includes(query.toLowerCase())
-    );
-  };
+    return pokemons
+    // Order pokemons
+      .sort((a, b) => {
+        const comparison = a.pokemon.localeCompare(b.pokemon, "it");
+        return currentSort === 'Z-A' ? -comparison : comparison;
+      })
+    // Filter by type
+      .filter((pokemon) => {
+        if (currentFilter === 'all') return true
+        return pokemon.type.split('/').includes(currentFilter)
+      })
+    // Filter by search
+      .filter((pokemon) => {
+        return pokemon.pokemon.toLowerCase().includes(currentSearch.toLowerCase())
+      })
+    // Paginate
+      .slice(indexOfFirstPost, indexOfLastPost)
+  }, [pokemons, currentPage, currentFilter, currentSort, currentSearch])
+
   
   const handleInputChange = (e) => {
-    const query = e.target.value;
-    if(query === 'all') {
-      setFilteredPokemons(pokemons);
-      return;
+    const query = e.target.value
+    if (query.length < 3) {
+      setCurrentSearch('')
+      return
     }
-    const filteredData = filterData(pokemons, query, 'pokemon');
-    setFilteredPokemons(filteredData);
+
+    setCurrentSearch(query)
   };
   
   const handleSortChange = (e) => {
-    const selectedSortOrder = e.target.value;
-    const sortedPokemons = dataSorter(
-      filteredPokemons, 
-      'pokemon', 
-      selectedSortOrder === 'Z-A' ? 'desc' : 'asc'
-    );
-    setFilteredPokemons(sortedPokemons);
+    setCurrentSort(e.target.value)
   };
 
   const handlePokemonTypeChange = (e) => {
-    if (e.target.value === 'all') {
-      setFilteredPokemons(pokemons);
-    } else {
-      const filteredByType = pokemons.filter(pokemon => 
-        pokemon.type.includes(e.target.value)
-      );
-      setFilteredPokemons(filteredByType);
-    }
+    setCurrentFilter(e.target.value)
   };
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -91,10 +98,6 @@ export default function Home() {
       </Container>
     );
   }
-
-  const pokemonTypes = Array.from(new Set(pokemons.map(pokemon => 
-    pokemon.type.split('/')).flat()
-  ));
   
   return (
     <Container ContainerType='main'>
@@ -132,8 +135,8 @@ export default function Home() {
       </Container>
       <Container top='5' ContainerType='div' className='flex justify-center'>
         <Pagination 
-          postsPerPage={postsPerPage} 
-          totalPosts={filteredPokemons.length} 
+          postsPerPage={POSTS_PER_PAGE} 
+          totalPosts={currentPosts.length} 
           paginate={paginate} 
         />
       </Container>
