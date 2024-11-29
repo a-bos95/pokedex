@@ -9,7 +9,6 @@ import Pagination from '../components/Pagination';
 import { useFavorites } from '../customHooks/useFavorites';
 
 export default function Home() {
-  const modalInput = useRef();
   const [pokemons, setPokemons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -99,7 +98,6 @@ export default function Home() {
   
   return (
     <Container ContainerType='main'>
-      <Modal ref={modalInput}/>
       <Container top='5' ContainerType='div' className='flex flex-col gap-4 max-w-[90%] mx-auto'>
         <Container top='5' ContainerType='div' className='flex gap-4 items-center justify-center'>
           <SearchInput 

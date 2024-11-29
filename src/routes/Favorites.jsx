@@ -15,7 +15,7 @@ export default function Favorites() {
         ) : (
           <Container top='5' ContainerType='ul' className='flex flex-wrap gap-4 justify-center'>
             {favorites.map((pokemon, index) => (
-              <FlippingCard key={index} pokemon={pokemon} />
+              <FlippingCard key={index} pokemon={pokemon} flippingDisabled />
             ))}
           </Container>
         )}
