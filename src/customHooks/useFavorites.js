@@ -1,13 +1,13 @@
 import { useState, useCallback } from 'react';
 
 export function useFavorites(storageKey, identifierKey) {
-  // Initialize state from localStorage
+  // Inizializza lo stato dal localStorage
   const [favorites, setFavorites] = useState(() => {
     const savedItems = localStorage.getItem(storageKey);
     return savedItems ? JSON.parse(savedItems) : [];
   });
 
-  // Toggle favorite status
+  // Aggiunge o rimuove un elemento dai preferiti
   const toggleFavorite = useCallback((item) => {
     setFavorites((prevFavorites) => {
       const isItemFavorite = prevFavorites.some(
@@ -23,7 +23,7 @@ export function useFavorites(storageKey, identifierKey) {
     });
   }, [storageKey, identifierKey]);
 
-  // Check if item is favorite
+  // Controlla se un elemento è un preferito
   const isFavorite = useCallback((item) => {
     return favorites.some(fav => fav[identifierKey] === item[identifierKey]);
   }, [favorites, identifierKey]);
