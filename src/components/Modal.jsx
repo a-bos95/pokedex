@@ -10,7 +10,7 @@ function Modal({ onSubmit }, ref) {
     }
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = () => {
     const name = ref.current.value.trim();
     if (name) {
       localStorage.setItem('userName', name);
