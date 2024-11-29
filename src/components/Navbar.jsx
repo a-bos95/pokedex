@@ -26,7 +26,7 @@ export default function Navbar({ title = 'Pokedex' }) {
           </ul>
         </div>
         <div className="navbar-end">
-          <p>Benvenuto, {name}</p>
+          <p>Welcome, <span className='font-bold'>{name}</span>!</p>
         </div>
       </div>
 
