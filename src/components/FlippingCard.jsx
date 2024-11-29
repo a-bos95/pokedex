@@ -4,7 +4,7 @@ import { StarIcon } from '@heroicons/react/24/outline'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { Link } from 'react-router-dom';
 
-export default function FlippingCard({ pokemon, onClickFavorites, isFavorite, flippingDisabled }) {
+export default function FlippingCard({ pokemon, onClickFavorites, onClickAddNotes, isFavorite, hasNotes, flippingDisabled }) {
   const [flip, setFlip] = useState(false);
 
   function handleFlip() {
@@ -53,7 +53,12 @@ export default function FlippingCard({ pokemon, onClickFavorites, isFavorite, fl
                 onClick={handleFlip}
               />
               <div className='flex flex-col'>
-                <button className="btn btn-primary mt-3">Add notes</button>
+                <button
+                  onClick={onClickAddNotes}
+                  className="btn btn-primary mt-3"
+                >
+                  Add notes
+                </button>
                 <button 
                   onClick={onClickFavorites}
                   className="btn btn-primary mt-3"
