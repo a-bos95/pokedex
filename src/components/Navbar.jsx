@@ -9,11 +9,7 @@ export default function Navbar({ title = 'Pokedex' }) {
   const handleNameSubmit = (newName) => {
     setName(newName)
   }
-
-  const handleButtonClick = () => {
-    setFiltersOpen((prevState) => !prevState)
-  }
-
+  
   return (
     <>
       <div className="navbar bg-base-100 border border-blue-800">
