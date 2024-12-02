@@ -9,7 +9,7 @@ import Pagination from '../components/Pagination';
 import { useFavorites } from '../customHooks/useFavorites';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
-const POSTS_PER_PAGE = 10
+const POSTS_PER_PAGE = 5
 
 export default function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -18,8 +18,6 @@ export default function Home() {
   const [pokemons, setPokemons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const [currentPage, setCurrentPage] = useState(1);
 
 
   // Use the favorites hook
@@ -68,7 +66,7 @@ export default function Home() {
     const indexOfLastPost = (URLParams.get('page') || 1) * POSTS_PER_PAGE;
     const indexOfFirstPost = indexOfLastPost - POSTS_PER_PAGE;
     return filteredAndSortedPokemons.slice(indexOfFirstPost, indexOfLastPost);
-  }, [filteredAndSortedPokemons, currentPage]);
+  }, [filteredAndSortedPokemons]);
 
   
   const handleInputChange = (e) => {
@@ -120,7 +118,7 @@ export default function Home() {
       <Container top='5' ContainerType='div' className='flex flex-col gap-4 max-w-[90%] mx-auto'>
         <Container top='5' ContainerType='div' className='flex gap-4 items-center justify-center'>
           <SearchInput 
-            placeholder='Search for a pokemon' 
+            placeholder='Look for a pokemon' 
             className='rounded-lg p-2 border border-secondary focus:outline focus:outline-secondary' 
             onChange={handleInputChange} 
           />
