@@ -7,20 +7,20 @@ import SortByFilter from '../components/SortByFilter';
 import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
 import { useFavorites } from '../customHooks/useFavorites';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const POSTS_PER_PAGE = 10
 
 export default function Home() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const URLParams = new URLSearchParams(searchParams)
+  
   const [pokemons, setPokemons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentFilter, setCurrentFilter] = useState('all')
-  const [currentSort, setCurrentSort] = useState('A-Z')
-  const [currentSearch, setCurrentSearch] = useState('')
+
 
   // Use the favorites hook
   const { toggleFavorite, isFavorite } = useFavorites('favorites', 'pokemon');
@@ -45,25 +45,27 @@ export default function Home() {
   )), [pokemons]);
 
   const filteredAndSortedPokemons = useMemo(() => {
+    const query = URLParams.get('query') || '';
+    const sort = URLParams.get('sort') || 'A-Z';
+    const type = URLParams.get('type') || 'all';
+
     return pokemons
-      // Order pokemons
       .sort((a, b) => {
         const comparison = a.pokemon.localeCompare(b.pokemon, "it");
-        return currentSort === 'Z-A' ? -comparison : comparison;
+        return sort === 'Z-A' ? -comparison : comparison;
       })
-      // Filter by type
       .filter((pokemon) => {
-        if (currentFilter === 'all') return true
-        return pokemon.type.split('/').includes(currentFilter)
+        if (type === 'all') return true
+        return pokemon.type.split('/').includes(type)
       })
-      // Filter by search
       .filter((pokemon) => {
-        return pokemon.pokemon.toLowerCase().includes(currentSearch.toLowerCase())
+        if (!query) return true
+        return pokemon.pokemon.toLowerCase().includes(query.toLowerCase())
       })
-  }, [pokemons, currentFilter, currentSort, currentSearch]);
+  }, [pokemons, URLParams]);
 
   const currentPosts = useMemo(() => {
-    const indexOfLastPost = currentPage * POSTS_PER_PAGE;
+    const indexOfLastPost = (URLParams.get('page') || 1) * POSTS_PER_PAGE;
     const indexOfFirstPost = indexOfLastPost - POSTS_PER_PAGE;
     return filteredAndSortedPokemons.slice(indexOfFirstPost, indexOfLastPost);
   }, [filteredAndSortedPokemons, currentPage]);
@@ -71,23 +73,36 @@ export default function Home() {
   
   const handleInputChange = (e) => {
     const query = e.target.value
-    if (query.length < 3) {
-      setCurrentSearch('')
+    if (query.length >= 3) {
+      URLParams.set('query', query)
+      setSearchParams(URLParams)
       return
     }
-
-    setCurrentSearch(query)
+    URLParams.delete('query')
+    setSearchParams(URLParams)
   };
   
   const handleSortChange = (e) => {
-    setCurrentSort(e.target.value)
+    const sort = e.target.value
+    URLParams.set('sort', sort)
+    setSearchParams(URLParams)
   };
 
   const handlePokemonTypeChange = (e) => {
-    setCurrentFilter(e.target.value)
+    const type = e.target.value
+    if (type === 'all') {
+      URLParams.delete('type')
+      setSearchParams(URLParams)
+      return
+    }
+    URLParams.set('type', type)
+    setSearchParams(URLParams)
   };
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber) => {
+    URLParams.set('page', pageNumber)
+    setSearchParams(URLParams)
+  }
 
   if (loading || error) {
     return (
