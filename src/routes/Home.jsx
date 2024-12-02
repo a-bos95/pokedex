@@ -44,28 +44,29 @@ export default function Home() {
       .flat()
   )), [pokemons]);
 
-  const currentPosts = useMemo(() => {
-    const indexOfLastPost = currentPage * POSTS_PER_PAGE;
-    const indexOfFirstPost = indexOfLastPost - POSTS_PER_PAGE;
-
+  const filteredAndSortedPokemons = useMemo(() => {
     return pokemons
-    // Order pokemons
+      // Order pokemons
       .sort((a, b) => {
         const comparison = a.pokemon.localeCompare(b.pokemon, "it");
         return currentSort === 'Z-A' ? -comparison : comparison;
       })
-    // Filter by type
+      // Filter by type
       .filter((pokemon) => {
         if (currentFilter === 'all') return true
         return pokemon.type.split('/').includes(currentFilter)
       })
-    // Filter by search
+      // Filter by search
       .filter((pokemon) => {
         return pokemon.pokemon.toLowerCase().includes(currentSearch.toLowerCase())
       })
-    // Paginate
-      .slice(indexOfFirstPost, indexOfLastPost)
-  }, [pokemons, currentPage, currentFilter, currentSort, currentSearch])
+  }, [pokemons, currentFilter, currentSort, currentSearch]);
+
+  const currentPosts = useMemo(() => {
+    const indexOfLastPost = currentPage * POSTS_PER_PAGE;
+    const indexOfFirstPost = indexOfLastPost - POSTS_PER_PAGE;
+    return filteredAndSortedPokemons.slice(indexOfFirstPost, indexOfLastPost);
+  }, [filteredAndSortedPokemons, currentPage]);
 
   
   const handleInputChange = (e) => {
@@ -136,7 +137,7 @@ export default function Home() {
       <Container top='5' ContainerType='div' className='flex justify-center'>
         <Pagination 
           postsPerPage={POSTS_PER_PAGE} 
-          totalPosts={currentPosts.length} 
+          totalPosts={filteredAndSortedPokemons.length} 
           paginate={paginate} 
         />
       </Container>
